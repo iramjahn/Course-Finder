@@ -9,3 +9,7 @@
   route handlers. Build auth redirects from the Host header so session cookies stay on the same host.
 - 2026-11-10: Never render a raw `x * 1.2` in copy; floating point leaks ("3.5999…"). Format through
   the shared hours formatter.
+- 2026-11-10: Bash heredocs in this harness also collapse `\` to `\` (regex and string escapes
+  silently change). Any file with backslashes goes through Write/Edit, never a heredoc.
+- 2026-11-10: `new URL("/\evil.com", origin)` resolves off-site. Validate `next` paths with
+  `/^\/(?!\/)[^\s\]*$/`, and never build redirect origins from an unvalidated Host header.

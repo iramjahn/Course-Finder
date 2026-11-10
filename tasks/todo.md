@@ -43,3 +43,7 @@ abandon swapped in "Excel Course for Beginners: Lesson 1" (9 min), second abando
 end of a new learner's path, waitlist row written, landing renders at 382 px without overflow.
 28 unit tests pass (grouping 1/3/5/10 h, placement, swap rule, count formatting).
 Not done: Vercel deploy (needs an interactive `vercel login`); steps are in README.md.
+Code review (code-reviewer agent) found 2 CRITICAL + 2 HIGH; all fixed and re-verified:
+open redirect via "/\" in `next` (shared safeNext + tests), forged Host/X-Forwarded-Host in
+redirect origin (allow-list: dev hosts or NEXT_PUBLIC_SITE_URL), events INSERT limited to the
+caller's own enrollment resources, enrollment trigger + check constraint for level/index invariants.

@@ -1,11 +1,8 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { requestOrigin } from "@/lib/request-origin";
+import { safeNext } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
-
-function safeNext(value: string | null): string {
-  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/today";
-}
 
 /** Completes a magic-link sign-in. Handles both the PKCE `code` and the `token_hash` link formats. */
 export async function GET(request: NextRequest) {

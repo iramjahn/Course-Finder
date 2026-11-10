@@ -43,8 +43,10 @@ create table public.enrollments (
   user_id uuid not null references auth.users(id) on delete cascade,
   path_id uuid not null references public.paths(id) on delete cascade,
   resource_ids uuid[] not null default '{}',
-  current_index integer not null default 0 check (current_index >= 0),
-  created_at timestamptz not null default now()
+  current_index integer not null default 0,
+  created_at timestamptz not null default now(),
+  constraint enrollments_index_in_range
+    check (current_index >= 0 and current_index <= coalesce(array_length(resource_ids, 1), 0))
 );
 create index enrollments_user_idx on public.enrollments (user_id, created_at desc);
 
@@ -88,9 +90,41 @@ create policy "own enrollments insert" on public.enrollments for insert to authe
 create policy "own enrollments update" on public.enrollments for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 create policy "own events select" on public.events for select to authenticated using (user_id = auth.uid());
-create policy "own events insert" on public.events for insert to authenticated with check (user_id = auth.uid());
+-- Only for resources in the caller's own enrollments, so nobody can vote on the whole catalog.
+create policy "own events insert" on public.events for insert to authenticated with check (
+  user_id = auth.uid()
+  and exists (
+    select 1 from public.enrollments e
+    where e.user_id = auth.uid() and resource_id = any (e.resource_ids)
+  )
+);
 
 -- waitlist: no client policies. The server inserts with the service role.
+
+-- Enrollment invariants: every resource in the list belongs to the path's skill and level,
+-- whatever client wrote the row. Enforced here so direct PostgREST writes cannot bypass it.
+create or replace function public.enrollments_validate()
+returns trigger
+language plpgsql
+set search_path = public
+as $fn$
+declare
+  bad integer;
+begin
+  select count(*) into bad
+  from unnest(new.resource_ids) as rid
+  left join public.resources r on r.id = rid
+  left join public.paths p on p.id = new.path_id
+  where r.id is null or p.id is null or r.skill_id <> p.skill_id or r.level <> p.level;
+  if bad > 0 then
+    raise exception 'enrollment resources must match the path skill and level' using errcode = 'check_violation';
+  end if;
+  return new;
+end;
+$fn$;
+create trigger enrollments_validate
+  before insert or update of path_id, resource_ids on public.enrollments
+  for each row execute function public.enrollments_validate();
 
 -- Ranking --------------------------------------------------------------------
 -- completion_rate = (completed + 1) / (completed + abandoned + 2). Plain arithmetic, no model.
