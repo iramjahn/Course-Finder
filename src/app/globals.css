@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #faf8f4;
+  --ink: #141414;
+  --muted: #5f5b55;
+  --line: #e6e1d8;
+  --accent: #1d4ed8;
+  --accent-ink: #ffffff;
+  --surface: #ffffff;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-surface: var(--surface);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-accent-ink transition hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-60;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-medium text-ink transition hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-60;
+  }
+  .card {
+    @apply rounded-xl border border-line bg-surface p-5;
+  }
+}
